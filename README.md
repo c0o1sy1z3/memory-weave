@@ -1,4 +1,4 @@
-# Memory Weave（通用版）
+# Memory Weave
 
 本 Skill 基于 OpenClaw 设计，主要是为了解决 Agent 失忆的问题。
 目标：**让 Agent 更懂你！**
@@ -111,9 +111,7 @@ batch_interval_hours: 2
 
 ## 待办事项
 
-[] TODO的自动定时提醒
-
-[] MEMORY等设定文件的定期压缩
-
-[] 超长时间未调用的信息做流逝归档
+- [ ] TODO的自动定时提醒
+- [ ] MEMORY等设定文件的定期压缩
+- [ ] 超长时间未调用的信息做流逝归档
 
