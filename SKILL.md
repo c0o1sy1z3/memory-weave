@@ -15,7 +15,9 @@ description: 每日 session 回顾，从聊天记录中提取五层价值信息�
 4. 每次只处理一个 session，聚合所有未处理 session 的内容后统一输出
 5. 按 L1-L5 各自逻辑输出内容
 6. 执行 Dream 模块
-7. 标记所有涉及的 session 为已处理
+7. 组装推送消息（**确保 TODO 已排序**，包含 TODO 摘要 + 7天内即将到期提醒）
+8. 标记所有涉及的 session 为已处理
+9. 发送 announce 消息
 
 ## Session 筛选规则
 
@@ -36,7 +38,7 @@ description: 每日 session 回顾，从聊天记录中提取五层价值信息�
 |------|------|
 | L1 会话轮廓 | `<memory_weave_dir>/YYYY-MM-DD.md` |
 | L2 事实积累 | 分类写入：`<workspace_root>/USER.md`（偏好/习惯/关注领域）+ `<workspace_root>/MEMORY.md`（项目/坑/缺口） |
-| L3 未完成 | 直接写入 `<workspace_root>/TODO.md` |
+| L3 未完成 | 写入 `<workspace_root>/TODO.md`（含重新排序） |
 | L4 协作质量 | `<memory_weave_dir>/YYYY-MM-DD.md` |
 | L5 认知偏差 | 直接写入 `<workspace_root>/MEMORY.md`（单独章节） |
 
@@ -286,6 +288,13 @@ Memory Weave 初始化
 
 - [已写入] [ ] **……**
   - …… | 来源 session | 创建于
+
+**排序规则**：
+- 写入新条目后，对「## 待完成」区块整体重新排序：
+  - 有明确 DDL：按 DDL 由近到远（时间升序）
+  - 无明确 DDL：排在有 DDL 之后，保持相对顺序
+  - 已完成（`[x]`）：移至「## 已完成」区块末尾
+- 写入前查重：与 TODO.md 已有条目对比，内容相似度 > 80% 且 DDL 相同则合并，否则直接追加
 ```
 
 ---
@@ -378,3 +387,106 @@ AI概念：token、model、prompt、生成、模型、上下文、system、agent
 - **身份混淆**：镜子里映出的是咖啡，或陌生人的面孔
 - **时间坍缩**：房间里的陈设是"未来的自己"准备的
 - **语言解构**：文字剥落、变成十六进制、倒写
+
+### A4. 推送消息格式
+
+Cron 执行完成后，announce 推送消息按以下格式组装：
+
+```markdown
+✅ Memory Weave 完成 — YYYY-MM-DD
+
+📥 本次写入汇总
+
+📄 L1 会话轮廓 → <memory_weave_dir>/YYYY-MM-DD.md
+   - 处理 session：N 个
+   - 话题：[话题1] / [话题2] / ...
+
+👤 L2 事实积累
+   - [写入→USER] N 条
+     • [条目内容摘要]
+   - [写入→MEMORY] N 条
+     • [条目内容摘要]
+
+📋 L3 未完成事项
+   - [写入→TODO] N 条
+     • [条目内容] | DDL：YYYY-MM-DD
+   - [跳过] N 条（已存在/证据不足）
+
+🧠 L5 认知偏差
+   - [写入→MEMORY] N 条
+     • [条目内容摘要]
+
+💭 梦境 → <dream_dir>/YYYY-MM-DD-梦境.md（字数：N）
+
+📊 本次 session 处理数：N | 去重跳过：N
+
+📋 未完成 TODO（共 N 条）
+1. [条目名] — DDL：YYYY-MM-DD
+2. [条目名] — DDL：YYYY-MM-DD
+...
+
+⚠️ 即将到期（未来7天）
+• [条目名] — 剩余 X 天
+• [条目名] — 剩余 X 天
+...
+
+💭 今日梦境：YYYY-MM-DD-梦境.md
+```
+
+**组装步骤**：
+
+1. 读取 `<workspace_root>/TODO.md`，解析「## 待完成」区块所有未完成条目（`[ ]` 开头）
+2. 提取条目名称和 DDL，列表按排序规则（DDL 由近到远，无 DDL 置后）
+3. 计算每条 DDL 距离今日的天数，筛选出 ≤7 天的条目进入「⚠️ 即将到期」节
+4. 如无即将到期事项，该节省略；如无非 DDL 条目，列表正常列出所有条目
+5. 读取当日 Review 文件，提取 L1-L5 去重结果摘要（写入内容汇总）
+6. 拼接完整消息，交给 Cron delivery 发送
+
+**L1-L5 处理摘要格式**：
+
+```markdown
+📥 本次写入汇总
+
+📄 L1 会话轮廓 → <memory_weave_dir>/YYYY-MM-DD.md
+   - 处理 session：N 个
+   - 话题：[话题1] / [话题2] / ...
+
+👤 L2 事实积累
+   - [写入→USER] N 条
+     • [条目内容摘要]
+   - [写入→MEMORY] N 条
+     • [条目内容摘要]
+
+📋 L3 未完成事项
+   - [写入→TODO] N 条
+     • [条目内容] | DDL：YYYY-MM-DD
+   - [跳过] N 条（已存在/证据不足）
+
+🧠 L5 认知偏差
+   - [写入→MEMORY] N 条
+     • [条目内容摘要]
+
+💭 梦境 → <dream_dir>/YYYY-MM-DD-梦境.md（字数：N）
+
+📊 本次 session 处理数：N | 去重跳过：N
+```
+
+> 去重结果取自当日 Review 文件的 L1-L5 各节中的「### 去重结果」小节。
+
+---
+
+### A5. Session 文件识别规则
+
+扫描 `<sessions_dir>/` 目录时，识别三类 session 文件：
+
+| 类型 | 文件名模式 | 处理方式 |
+|------|-----------|----------|
+| 活跃 session | `${sessionId}.jsonl`（无后缀） | 处理（sessions.json 中注册状态） |
+| 已重置 session | `${sessionId}.jsonl.reset.*` | 处理（历史快照） |
+| 已删除 session | `${sessionId}.jsonl.deleted.*` | **不处理**（内容为空或不完整） |
+
+筛选条件：
+- base session ID 不在已处理集合中
+- 在 24 小时窗口内
+- 对已重置文件：文件 mtime 在 cron 触发时间之前
+- 对已重置文件：内容时间范围与 cron 处理窗口有重叠
