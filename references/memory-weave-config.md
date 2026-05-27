@@ -1,4 +1,4 @@
-# Session Review - 个性化配置文件
+# Memory Weave - 个性化配置文件
 
 > 此文件由 `memory-weave init` 自动生成
 > 初始化时由用户填入完整路径
@@ -13,7 +13,7 @@
 
 ## Cron 配置
 
-- cron_schedule: "0 5 * * *"
+- cron_schedule: "0 9 * * *"
 - cron_timezone: Asia/Shanghai
 - cron_enabled: true
 
