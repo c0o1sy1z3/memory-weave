@@ -93,10 +93,10 @@ def is_subagent_session(filepath, cron_trigger_time):
 
 | 层级 | 输出 |
 |------|------|
-| L1 会话轮廓 | `<session_review_dir>/YYYY-MM-DD.md` |
+| L1 会话轮廓 | `<Memory Weave_dir>/YYYY-MM-DD.md` |
 | L2 事实积累 | 分类写入：`<workspace_root>/USER.md`（偏好/习惯/关注领域）+ `<workspace_root>/MEMORY.md`（项目/坑/缺口） |
 | L3 未完成 | 写入 `<workspace_root>/TODO.md`（含重新排序） |
-| L4 协作质量 | `<session_review_dir>/YYYY-MM-DD.md` |
+| L4 协作质量 | `<Memory Weave_dir>/YYYY-MM-DD.md` |
 | L5 认知偏差 | 直接写入 `<workspace_root>/MEMORY.md`（单独章节） |
 
 ---
@@ -211,7 +211,7 @@ Session Review 初始化
    - `<workspace_root>/MEMORY.md`（若不存在则创建空文件）
    - `<workspace_root>/USER.md`（若不存在则创建空文件）
    - `<workspace_root>/TODO.md`（若不存在则创建空文件）
-   - `<session_review_dir>`（目录）
+   - `<Memory Weave_dir>`（目录）
    - `<dream_dir>`（目录）
    - `<sessions_dir>/processed-sessions.json`（若不存在则创建空 `{"processed":[]}`)
 4. 计算未处理的 session 规模，给出分批建议：
@@ -282,7 +282,7 @@ Session Review 初始化
 
 - session 文件目录：<sessions_dir>
 - Dream 输出目录：<dream_dir>
-- Review 文件目录：<session_review_dir>
+- Review 文件目录：<Memory Weave_dir>
 - 工作区根目录：<workspace_root>
 - 待处理 session：N 个，分 M 批处理
 - Cron：<已创建（每日 5:00）/ 未创建>
@@ -460,7 +460,7 @@ Session Review 初始化
 
 #### 执行流程
 
-1. 读取 `<session_review_dir>/YYYY-MM-DD.md`，计算 SHA256 hash
+1. 读取 `<Memory Weave_dir>/YYYY-MM-DD.md`，计算 SHA256 hash
 2. **SearXNG 搜索外部梦境片段**：
    - 构造随机搜索词，取以下组合之一：
      - `dream imagery surreal symbols interpretation`
@@ -493,7 +493,7 @@ Session Review 初始化
 
 - **日期**：YYYY-MM-DD
 - **Seed**：hash 值（前 16 位）
-- **Seed 来源**：`<session_review_dir>/YYYY-MM-DD.md`
+- **Seed 来源**：`<Memory Weave_dir>/YYYY-MM-DD.md`
 
 ---
 
@@ -540,7 +540,7 @@ Cron 执行完成后，announce 推送消息按以下格式组装：
 ```markdown
 📥 本次写入汇总
 
-📄 L1 会话轮廓 → <session_review_dir>/YYYY-MM-DD.md
+📄 L1 会话轮廓 → <Memory Weave_dir>/YYYY-MM-DD.md
    - 处理 session：N 个
    - 话题：[话题1] / [话题2] / ...
 

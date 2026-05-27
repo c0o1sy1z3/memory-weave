@@ -39,7 +39,7 @@ memory-weave 初始化
 |------|------|------|
 | `sessions_dir` | OpenClaw session 文件目录 | `~/.openclaw/agents/athena/sessions/` |
 | `dream_dir` | 梦境输出目录 | `~/Documents/Vault/Athena/Dream/` |
-| `session_review_dir` | L1/L4 review 文件输出目录 | `~/Documents/Temp/sessions/` |
+| `Memory Weave_dir` | L1/L4 review 文件输出目录 | `~/Documents/Temp/sessions/` |
 | `workspace_root` | USER.md / MEMORY.md / TODO.md 所在目录 | `~/.openclaw/workspace-athena/` |
 
 初始化流程会自动：
@@ -68,7 +68,7 @@ memory-weave 初始化
 agent_id: <你的 agent id>
 sessions_dir: <session 文件目录>
 dream_dir: <梦境输出目录>
-session_review_dir: <review 文件输出目录>
+Memory Weave_dir: <review 文件输出目录>
 workspace_root: <USER.md / MEMORY.md / TODO.md 所在目录>
 
 cron_schedule: "0 5 * * *"

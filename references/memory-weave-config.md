@@ -7,7 +7,7 @@
 
 agent_id: athena
 dream_dir: /Users/littlebrother/Documents/Docs/Personal/Athena/Dream/
-session_review_dir: /Users/littlebrother/Documents/Docs/Personal/Temp/sessions/
+Memory Weave_dir: /Users/littlebrother/Documents/Docs/Personal/Temp/sessions/
 workspace_root: /Users/littlebrother/.openclaw/workspace-athena/
 sessions_dir: /Users/littlebrother/.openclaw/agents/athena/sessions/
 
@@ -25,6 +25,6 @@ batch_interval_hours: 2
 ## 路径说明
 
 - dream_dir: 梦境归档输出目录，每次生成 YYYY-MM-DD-梦境.md
-- session_review_dir: L1/L4 review 文件临时存放目录，每次生成 YYYY-MM-DD.md
+- Memory Weave_dir: L1/L4 review 文件临时存放目录，每次生成 YYYY-MM-DD.md
 - workspace_root: USER.md / MEMORY.md / TODO.md 所在目录（绝对路径）
 - sessions_dir: OpenClaw session 文件存储目录（绝对路径）
