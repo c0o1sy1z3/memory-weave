@@ -10,14 +10,65 @@ description: 每日 session 回顾，从聊天记录中提取五层价值信息�
 ## 执行流程
 
 1. 读取 `references/memory-weave-config.md`，获取所有路径和参数
-2. 扫描 `<sessions_dir>/` 目录，筛选未处理的 session 文件
+2. 扫描 `<sessions_dir>/` 目录，筛选未处理的 session 文件（排除自身 subagent session，见下方说明）
 3. 过滤工具调用（toolCall/toolResult/custom），只保留 user/assistant 对话
 4. 每次只处理一个 session，聚合所有未处理 session 的内容后统一输出
-5. 按 L1-L5 各自逻辑输出内容
-6. 执行 Dream 模块
-7. 组装推送消息（**确保 TODO 已排序**，包含 TODO 摘要 + 7天内即将到期提醒）
-8. 标记所有涉及的 session 为已处理
-9. 发送 announce 消息
+5. 按 L1-L5 各自逻辑提取内容并做去重（同时执行 Dream 模块，见下方 Dream 模块说明）
+
+   **【重要】去重在写入前完成，但去重结果不作为推送数据源**
+
+6. **【强制写入阶段】必须先于推送消息组装，所有写入必须实际执行并验证**
+
+   6a. 执行 L2→USER 写入（如有）：使用 `edit`/`write` 工具调用，将候选条目写入 `<workspace_root>/USER.md`
+   
+   6b. 执行 L2→MEMORY 写入（如有）：使用 `edit`/`write` 工具调用，将候选条目写入 `<workspace_root>/MEMORY.md`
+   
+   6c. 执行 L3→TODO 写入（如有）：使用 `edit`/`write` 工具调用，追加条目到 `<workspace_root>/TODO.md`，并重新排序
+   
+   6d. 执行 L5→MEMORY 写入（如有）：使用 `edit`/`write` 工具调用，将认知偏差条目追加到 `<workspace_root>/MEMORY.md`
+   
+   6e. **【验证】**对每一个写入操作，读取目标文件确认内容已存在。验证失败则重试（最多 3 次）。验证通过后记录该写入条目的验证状态
+
+7. 生成 Review 文件（基于步骤 6 的实际执行结果，「### 实际写入」节填写真实验证后的记录）
+8. 组装推送消息（基于步骤 6 的实际写入记录 + 验证结果，**禁止**从 Review 文件的「### 去重结果」小节提取推送数据）
+9. 标记所有涉及的 session 为已处理
+10. 发送 announce 消息
+
+**执行纪律约束（硬性）：**
+- 步骤 6（写入）必须先于步骤 7（生成 Review）和步骤 8（组装推送）执行
+- 推送消息中的「本次写入汇总」数据源必须是步骤 6 的实际工具调用记录，禁止从描述性文字解析
+- 「### 实际写入」节必须在步骤 6e 验证完成后填写，不得提前填入未经验证的内容
+
+**排除自身 subagent session**：Cron 触发的 isolated subagent 会在 sessions 目录产生自身 session 文件，扫描时必须排除。使用文件大小（< 10KB）+ 创建时间（cron 触发 ± 60 秒内）双重条件判断。
+
+由于 subagent 的 session 文件在 cron 触发后约 2 秒创建，且文件极小（~4KB），使用以下双重条件排除：
+
+1. **文件大小 < 10KB**：subagent session 文件特征明显（正常用户 session 通常 > 100KB）
+2. **文件创建时间（birth time）在 cron 触发时间 ± 60 秒内**：cron 每天 5:00 触发，排除窗口 04:59 ~ 05:01
+
+具体实现：在扫描 session 文件时，对每个候选文件执行 birth time + size 检查，满足则跳过。
+
+```python
+import os
+from datetime import datetime, timezone, timedelta
+
+def is_subagent_session(filepath, cron_trigger_time):
+    """判断是否为当前 subagent 自身的 session 文件"""
+    st = os.stat(filepath)
+    # 条件1：文件极小
+    if st.st_size >= 10 * 1024:
+        return False
+    # 条件2：创建时间在 cron 触发 ± 60 秒内
+    try:
+        birth = st.st_birthtime
+    except AttributeError:
+        # macOS 以外的系统 fallback 到 mtime
+        birth = st.st_mtime
+    delta = abs(birth - cron_trigger_time.timestamp())
+    return delta < 60
+```
+
+> 注意：此方法基于 macOS 的 `st_birthtime`，在其他平台 fallback 到 `st_mtime`。
 
 ## Session 筛选规则
 
@@ -242,15 +293,16 @@ Memory Weave 初始化
 - **[合并→USER]** 偏好与习惯：…… → 更新为 …… | 来源：session_id
 - **[跳过]** 已有条目（内容重复）
 
-### 实际写入
+### 实际写入（执行记录）
 
-> 以下内容已写入 USER.md：
+> 此节在步骤 6e 验证完成后填写，不得填入未经验证的内容。数据直接取自实际工具调用结果。
 
-- [已写入→USER] ……
+| 操作 | 目标文件 | 工具调用 | 写入内容摘要 | 验证状态 |
+|------|---------|---------|------------|---------|
+| L2→USER | USER.md | edit/write | …… | ✅ 已验证 |
+| L2→MEMORY | MEMORY.md | edit/write | …… | ✅ 已验证 |
 
-> 以下内容已写入 MEMORY.md：
-
-- [已写入→MEMORY] ……
+- 无写入时填写「本层无新写入」
 ```
 
 **内容分类写入规则：**
@@ -282,12 +334,15 @@ Memory Weave 初始化
 - **[跳过]** ……（已在 TODO.md 中，话题重复）
 - **[跳过]** ……（证据不足，不满足"明确延后意图"）
 
-### 实际写入
+### 实际写入（执行记录）
 
-> 以下内容已写入 TODO.md：
+> 此节在步骤 6e 验证完成后填写，不得填入未经验证的内容。数据直接取自实际工具调用结果。
 
-- [已写入] [ ] **……**
-  - …… | 来源 session | 创建于
+| 操作 | 目标文件 | 工具调用 | 写入内容摘要 | 验证状态 |
+|------|---------|---------|------------|---------|
+| L3→TODO | TODO.md | edit/write | …… | ✅ 已验证 |
+
+- 无写入时填写「本层无新写入」
 
 **排序规则**：
 - 写入新条目后，对「## 待完成」区块整体重新排序：
@@ -329,11 +384,15 @@ Memory Weave 初始化
 - **[合并至]** …… → 更新为 …… | 来源：session_id
 - **[跳过]** 与已有条目重复（……）
 
-### 实际写入
+### 实际写入（执行记录）
 
-> 以下内容已写入 MEMORY.md：
+> 此节在步骤 6e 验证完成后填写，不得填入未经验证的内容。数据直接取自实际工具调用结果。
 
-- [已写入] **……** | 来源：session_id
+| 操作 | 目标文件 | 工具调用 | 写入内容摘要 | 验证状态 |
+|------|---------|---------|------------|---------|
+| L5→MEMORY | MEMORY.md | edit/write | …… | ✅ 已验证 |
+
+- 无写入时填写「本层无新写入」
 ```
 
 ---
@@ -439,7 +498,7 @@ Cron 执行完成后，announce 推送消息按以下格式组装：
 2. 提取条目名称和 DDL，列表按排序规则（DDL 由近到远，无 DDL 置后）
 3. 计算每条 DDL 距离今日的天数，筛选出 ≤7 天的条目进入「⚠️ 即将到期」节
 4. 如无即将到期事项，该节省略；如无非 DDL 条目，列表正常列出所有条目
-5. 读取当日 Review 文件，提取 L1-L5 去重结果摘要（写入内容汇总）
+5. 读取当日 Review 文件，从「### 实际写入（执行记录）」表格中提取实际写入内容汇总（**禁止**从「### 去重结果」小节提取）
 6. 拼接完整消息，交给 Cron delivery 发送
 
 **L1-L5 处理摘要格式**：
@@ -471,7 +530,7 @@ Cron 执行完成后，announce 推送消息按以下格式组装：
 📊 本次 session 处理数：N | 去重跳过：N
 ```
 
-> 去重结果取自当日 Review 文件的 L1-L5 各节中的「### 去重结果」小节。
+> ⚠️ **数据源约束**：推送消息的「本次写入汇总」必须基于步骤 6 的实际工具调用记录 + 验证结果，禁止从 Review 文件的「### 去重结果」小节解析。若写入尚未验证，推送中该条目必须标记为「待验证」而非「已写入」。
 
 ---
 
