@@ -1,26 +1,26 @@
 # Session Review - 个性化配置文件
 
 > 此文件由 `memory-weave init` 自动生成
-> 初始化时由用户填入完整路径，手动修改前请先阅读 memory-weave-mechanism.md 的配置节
+> 初始化时由用户填入完整路径
 
 ## 基本信息
 
-agent_id: athena
-dream_dir: ～/Documents/Docs/Personal/Athena/Dream/
-memory_weave_dir: ～/Documents/Docs/Personal/Temp/sessions/
-workspace_root: ～/.openclaw/workspace-athena/
-sessions_dir: ～/.openclaw/agents/athena/sessions/
+- agent_id: athena
+- dream_dir: ～/Documents/Docs/Personal/Athena/Dream/
+- memory_weave_dir: ～/Documents/Docs/Personal/Temp/sessions/
+- workspace_root: ～/.openclaw/workspace-athena/
+- sessions_dir: ～/.openclaw/agents/athena/sessions/
 
 ## Cron 配置
 
-cron_schedule: "0 5 * * *"
-cron_timezone: Asia/Shanghai
-cron_enabled: true
+- cron_schedule: "0 5 * * *"
+- cron_timezone: Asia/Shanghai
+- cron_enabled: true
 
 ## 分批处理（仅初始化阶段使用，日常 Cron 无需分批）
 
-batch_size: 3
-batch_interval_hours: 2
+- batch_size: 3
+- batch_interval_hours: 2
 
 ## 路径说明
 
