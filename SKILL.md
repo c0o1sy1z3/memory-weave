@@ -172,7 +172,7 @@ AI概念：token、model、prompt、生成、模型、上下文、system、agent
 
 ## 初始化流程（`/memory-weave init`）
 
-**触发方式**：用户说「memory-weave 初始化」或「/session-review init」
+**触发方式**：用户说「memory-weave 初始化」或「/memory-weave init」
 
 ### 第一步：收集路径配置
 
