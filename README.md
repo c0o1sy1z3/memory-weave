@@ -1,25 +1,6 @@
 # Memory Weave
 
-本 Skill 基于 OpenClaw 设计，主要是为了解决 Agent 失忆的问题。
-目标：**让 Agent 更懂你！**
-
-## 设计思路
-
-每日定时对过去 24 小时完成的 session 记录文件进行回顾，从聊天记录中提取五层价值信息，去重后合并写入对应的设定文件，来确保记忆不被遗漏
-完成cron之后会向用户推送几个关键信息：
-1. L1-L5写入特定文件的内容
-2. TODO当前待办内容，并提醒最近7天会到期的内容
-
-被写入的目标文件列表如下：
-* USER.md 对应 偏好/习惯/关注领域
-* MEMORY.md 对应 项目/坑/缺口
-* TODO.md 对应 待办事项 （此文件为本 Skill 新增）
-最后以当日内容为种子生成梦境。
-
-## 注意事项
-
-* 本 Skill 不对已有文件做删除，但会对 MEMORY.md 等设定文件进行去重合并等操作，在使用之前请记得备份
-* 本 Skill 在首次初始化时会尝试对指定 agent 的已有 session 记录文件进行全量处理，如果你的记录文件较多，记得先预估一下规模后分批处理，避免撑爆上下文或是处理时间过长导致失败
+每日 session 回顾，从聊天记录中提取五层价值信息，并以当日内容为种子生成梦境。
 
 ## 功能概述
 
@@ -58,7 +39,7 @@ memory-weave 初始化
 |------|------|------|
 | `sessions_dir` | OpenClaw session 文件目录 | `~/.openclaw/agents/athena/sessions/` |
 | `dream_dir` | 梦境输出目录 | `~/Documents/Vault/Athena/Dream/` |
-| `memory_weave_dir` | L1/L4 review 文件输出目录 | `~/Documents/Temp/sessions/` |
+| `session_review_dir` | L1/L4 review 文件输出目录 | `~/Documents/Temp/sessions/` |
 | `workspace_root` | USER.md / MEMORY.md / TODO.md 所在目录 | `~/.openclaw/workspace-athena/` |
 
 初始化流程会自动：
@@ -84,9 +65,10 @@ memory-weave 初始化
 路径：`references/memory-weave-config.md`
 
 ```markdown
+agent_id: <你的 agent id>
 sessions_dir: <session 文件目录>
 dream_dir: <梦境输出目录>
-memory_weave_dir: <review 文件输出目录>
+session_review_dir: <review 文件输出目录>
 workspace_root: <USER.md / MEMORY.md / TODO.md 所在目录>
 
 cron_schedule: "0 5 * * *"
@@ -104,8 +86,7 @@ batch_interval_hours: 2
 
 ## 梦境模块
 
-- 以当日 review 内容为种子，通过 web_search 抓取外部随机意象
-- **降级规则**：若 web_search 失败（网络错误或无结果），自动跳过此步骤，纯以内部上下文生成 Dream；Dream 仍正常产出
+- 以当日 review 内容为种子，通过 web search 抓取外部随机意象
 - 读取最近 3 篇梦境生成排除列表，避免意象重复
 - 文学质量要求：L1 物理质地、L2 情绪身体化、L3 语言节奏、L4 留白、L5 情绪关系、L6 语言解构
 - 禁止词汇：文件类、系统类、AI 概念类词汇
@@ -113,10 +94,3 @@ batch_interval_hours: 2
 ## 状态追踪
 
 处理记录保存在 `sessions_dir/processed-sessions.json`，幂等设计确保 session 不会被重复处理。
-
-## 待办事项
-
-- [x] TODO的自动定时提醒
-- [ ] MEMORY等设定文件的定期压缩
-- [ ] 超长时间未调用的信息做流逝归档
-
