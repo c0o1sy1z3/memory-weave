@@ -6,10 +6,10 @@
 ## 基本信息
 
 - agent_id: athena
-- dream_dir: ～/Documents/Docs/Personal/Athena/Dream/
-- memory_weave_dir: ～/Documents/Docs/Personal/Temp/sessions/
-- workspace_root: ～/.openclaw/workspace-athena/
-- sessions_dir: ～/.openclaw/agents/athena/sessions/
+- dream_dir: ~/Documents/Docs/Personal/Athena/Dream/
+- memory_weave_dir: ~/Documents/Docs/Personal/Temp/sessions/
+- workspace_root: ~/.openclaw/workspace-athena/
+- sessions_dir: ~/.openclaw/agents/athena/sessions/
 
 ## Cron 配置
 
