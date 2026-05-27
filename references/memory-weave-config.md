@@ -6,10 +6,10 @@
 ## 基本信息
 
 agent_id: athena
-dream_dir: /Users/littlebrother/Documents/Docs/Personal/Athena/Dream/
-Memory Weave_dir: /Users/littlebrother/Documents/Docs/Personal/Temp/sessions/
-workspace_root: /Users/littlebrother/.openclaw/workspace-athena/
-sessions_dir: /Users/littlebrother/.openclaw/agents/athena/sessions/
+dream_dir: ～/Documents/Docs/Personal/Athena/Dream/
+memory_weave_dir: ～/Documents/Docs/Personal/Temp/sessions/
+workspace_root: ～/.openclaw/workspace-athena/
+sessions_dir: ～/.openclaw/agents/athena/sessions/
 
 ## Cron 配置
 
@@ -25,6 +25,6 @@ batch_interval_hours: 2
 ## 路径说明
 
 - dream_dir: 梦境归档输出目录，每次生成 YYYY-MM-DD-梦境.md
-- Memory Weave_dir: L1/L4 review 文件临时存放目录，每次生成 YYYY-MM-DD.md
+- memory_weave_dir: L1/L4 review 文件临时存放目录，每次生成 YYYY-MM-DD.md
 - workspace_root: USER.md / MEMORY.md / TODO.md 所在目录（绝对路径）
 - sessions_dir: OpenClaw session 文件存储目录（绝对路径）
